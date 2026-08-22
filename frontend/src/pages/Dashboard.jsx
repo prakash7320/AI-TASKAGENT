@@ -283,10 +283,11 @@ const Dashboard = () => {
                       </div>
                     ) : (
                       <>
-                        <span className="truncate pr-6 capitalize">{session.title}</span>
-                        <div className="absolute right-2 hidden group-hover:flex items-center gap-2 bg-[#0A0D14] pl-2">
-                          <button onClick={(e) => startEditing(session, e)} className="text-slate-400 hover:text-cyan-400 transition-colors"><FiEdit2 size={14}/></button>
-                          <button onClick={(e) => deleteChat(session.id, e)} className="text-slate-400 hover:text-red-400 transition-colors"><FiTrash2 size={14}/></button>
+                        <span className="truncate pr-16 capitalize">{session.title}</span>
+                        {/* 📱 Mobile-Friendly Edit & Delete Buttons */}
+                        <div className={`absolute right-2 flex items-center gap-3 pl-2 transition-opacity ${currentSessionId === session.id ? 'opacity-100' : 'opacity-100 lg:opacity-0 lg:group-hover:opacity-100'}`}>
+                          <button onClick={(e) => startEditing(session, e)} className="text-slate-400 hover:text-cyan-400 p-1"><FiEdit2 size={16}/></button>
+                          <button onClick={(e) => deleteChat(session.id, e)} className="text-slate-400 hover:text-red-400 p-1"><FiTrash2 size={16}/></button>
                         </div>
                       </>
                     )}
