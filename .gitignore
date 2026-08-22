@@ -8,6 +8,8 @@ __pycache__/
 venv/
 env/
 .env
+backend/token.json
+backend/credentials.json
 
 # System
 .DS_Store
