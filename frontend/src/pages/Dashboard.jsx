@@ -5,7 +5,7 @@ import {
   FiSend, FiCloudRain, FiCalendar, FiChevronRight,
   FiMenu, FiX, FiThumbsUp, FiThumbsDown, FiCopy, FiRefreshCw, 
   FiVolume2, FiXCircle, FiImage, 
-  FiTrash2, FiEdit2, FiCheck 
+  FiTrash2, FiEdit2, FiCheck, FiInfo, FiVolumeX 
 } from 'react-icons/fi';
 import { FaBolt } from 'react-icons/fa';
 
@@ -16,6 +16,7 @@ import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false); 
   const [activeView, setActiveView] = useState("chat"); 
   
   // 🚨 USER AUTH & LOGOUT LOGIC
@@ -153,6 +154,13 @@ const Dashboard = () => {
     }
   };
 
+  // 🚨 STOP AUDIO FUNCTION
+  const stopAudio = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
   const toBase64 = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -274,7 +282,7 @@ const Dashboard = () => {
                  <p className="text-xs text-slate-500 px-3 py-2 italic">No chats yet...</p>
               ) : (
                 chatSessions.map((session) => (
-                  <div key={session.id} onClick={() => {setCurrentSessionId(session.id); setActiveView("chat");}} className={`group relative flex items-center justify-between w-full text-left text-sm rounded-lg px-3 py-2.5 transition-colors cursor-pointer ${currentSessionId === session.id && activeView === "chat" ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+                  <div key={session.id} onClick={() => {setCurrentSessionId(session.id); setActiveView("chat"); setIsSidebarOpen(false);}} className={`group relative flex items-center justify-between w-full text-left text-sm rounded-lg px-3 py-2.5 transition-colors cursor-pointer ${currentSessionId === session.id && activeView === "chat" ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
                     
                     {editingSessionId === session.id ? (
                       <div className="flex items-center gap-2 w-full">
@@ -284,7 +292,7 @@ const Dashboard = () => {
                     ) : (
                       <>
                         <span className="truncate pr-16 capitalize">{session.title}</span>
-                        {/* 📱 Mobile-Friendly Edit & Delete Buttons */}
+                        {/* Mobile-Friendly Edit & Delete Buttons */}
                         <div className={`absolute right-2 flex items-center gap-3 pl-2 transition-opacity ${currentSessionId === session.id ? 'opacity-100' : 'opacity-100 lg:opacity-0 lg:group-hover:opacity-100'}`}>
                           <button onClick={(e) => startEditing(session, e)} className="text-slate-400 hover:text-cyan-400 p-1"><FiEdit2 size={16}/></button>
                           <button onClick={(e) => deleteChat(session.id, e)} className="text-slate-400 hover:text-red-400 p-1"><FiTrash2 size={16}/></button>
@@ -297,10 +305,9 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* 🚨 PROFILE BUTTON IN SIDEBAR */}
           <nav className="px-4 space-y-2 border-t border-slate-800/50 pt-4">
             <button className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-xl transition-colors text-sm"><FiCpu size={18} /> Memory</button>
-            <button onClick={() => setActiveView("profile")} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-sm ${activeView === "profile" ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+            <button onClick={() => {setActiveView("profile"); setIsSidebarOpen(false);}} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-sm ${activeView === "profile" ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
               <FiUser size={18} /> Profile
             </button>
           </nav>
@@ -319,23 +326,27 @@ const Dashboard = () => {
               <button onClick={() => setActiveView("profile")} className={`text-sm font-medium h-full px-2 ${activeView === "profile" ? 'text-white border-b-2 border-cyan-400' : 'text-slate-400 hover:text-white'}`}>Profile</button>
             </div>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4">
-            <button className="text-slate-400 hover:text-white"><FiSettings size={20} /></button>
-            <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 overflow-hidden ml-1 cursor-pointer" onClick={() => setActiveView("profile")}>
+          <div className="flex items-center gap-4 sm:gap-4">
+            
+            <button className="lg:hidden text-cyan-400 hover:text-cyan-300 flex items-center gap-1 bg-cyan-500/10 px-3 py-1.5 rounded-lg border border-cyan-500/20" onClick={() => setIsRightSidebarOpen(true)}>
+              <FiInfo size={16} /> <span className="text-xs font-medium">Widgets</span>
+            </button>
+
+            <button className="hidden sm:block text-slate-400 hover:text-white"><FiSettings size={20} /></button>
+            <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 overflow-hidden cursor-pointer" onClick={() => setActiveView("profile")}>
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
             </div>
           </div>
         </header>
 
-        {/* 🚨 DYNAMIC VIEWS 🚨 */}
         {activeView === "chat" ? (
           <>
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
               {messages.length === 0 && !isTyping && (
                  <div className="flex flex-col items-center justify-center h-full opacity-60">
                    <FaBolt size={48} className="text-blue-500 mb-4" />
-                   <h2 className="text-2xl font-bold text-white mb-2">How can I help you today?</h2>
-                   <p className="text-slate-400 text-sm text-center max-w-md">Type, speak, or upload an image to chat with your AI.</p>
+                   <h2 className="text-2xl font-bold text-white mb-2 text-center">How can I help you?</h2>
+                   <p className="text-slate-400 text-sm text-center max-w-md px-4">Type, speak, or upload an image to chat with your AI.</p>
                  </div>
               )}
 
@@ -375,9 +386,15 @@ const Dashboard = () => {
                   type="text" value={inputText}
                   onChange={(e) => { setInputText(e.target.value); setIsVoiceMode(false); }}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Type a message or attach a file..." 
+                  placeholder="Type a message..." 
                   className="flex-1 bg-transparent py-4 px-2 text-sm sm:text-base text-white placeholder-slate-500 outline-none"
                 />
+                
+                {/* 🚨 STOP AUDIO BUTTON */}
+                <button onClick={stopAudio} title="Stop AI Voice" className="px-2 text-slate-400 hover:text-red-400 transition-colors">
+                  <FiVolumeX size={18} />
+                </button>
+
                 <button onClick={handleVoiceInput} className={`px-2 sm:px-3 transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-slate-400 hover:text-white'}`}><FiMic size={18} /></button>
                 <div className="pr-2 py-2">
                   <button onClick={handleSendMessage} className="bg-gradient-to-r from-cyan-400 to-blue-600 hover:scale-110 transition-all text-white p-2.5 rounded-xl shadow-md"><FiSend size={16} /></button>
@@ -413,7 +430,6 @@ const Dashboard = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6 hover:border-cyan-500/50 transition-all shadow-lg group cursor-pointer">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
@@ -438,22 +454,6 @@ const Dashboard = () => {
                   <p className="text-sm text-slate-400 mb-5 leading-relaxed">Automatically categorizes incoming emails and drafts replies for common client queries.</p>
                   <div className="flex items-center gap-2 mt-4"><span className="w-2.5 h-2.5 rounded-full bg-slate-500 animate-pulse"></span><span className="text-xs text-slate-500 font-medium">Waiting for new emails trigger...</span></div>
                 </div>
-
-                <div className="bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6 hover:border-pink-500/50 transition-all shadow-lg group cursor-pointer md:col-span-2">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-pink-500/10 text-pink-400 rounded-xl group-hover:scale-110 transition-transform"><FiCalendar size={22}/></div>
-                      <h3 className="text-white font-semibold tracking-wide">Calendar Sync & Meeting Prep</h3>
-                    </div>
-                    <span className="px-3 py-1 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest rounded-md border border-green-500/20">Active</span>
-                  </div>
-                  <p className="text-sm text-slate-400 mb-4">Syncs with Google Calendar and generates pre-meeting context notes automatically.</p>
-                  <div className="flex gap-2">
-                     <span className="text-[10px] px-2 py-1 bg-slate-900 text-slate-300 rounded border border-slate-700">Next Run: 09:00 AM</span>
-                     <span className="text-[10px] px-2 py-1 bg-slate-900 text-slate-300 rounded border border-slate-700">Events synced: 14</span>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>
@@ -461,10 +461,16 @@ const Dashboard = () => {
       </div>
 
       {/* ================= RIGHT SIDEBAR ================= */}
-      <div className="w-80 border-l border-slate-800 hidden lg:flex flex-col bg-[#0A0D14] overflow-y-auto">
-        <div className="p-6 space-y-8">
+      {isRightSidebarOpen && <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setIsRightSidebarOpen(false)}></div>}
+      
+      <div className={`fixed inset-y-0 right-0 z-50 w-80 border-l border-slate-800 flex flex-col bg-[#0A0D14] transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isRightSidebarOpen ? 'translate-x-0' : 'translate-x-full'} lg:flex`}>
+        <div className="p-6 space-y-8 h-full overflow-y-auto scrollbar-hide relative">
           
-          <div>
+          <button className="lg:hidden absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full" onClick={() => setIsRightSidebarOpen(false)}>
+             <FiX size={18} />
+          </button>
+
+          <div className="pt-6 lg:pt-0">
             <h3 className="text-[11px] font-bold text-slate-500 tracking-widest uppercase mb-3">Today's Weather</h3>
             <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden shadow-lg">
               <div className="relative z-10">
