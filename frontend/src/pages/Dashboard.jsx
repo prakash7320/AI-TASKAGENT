@@ -173,7 +173,7 @@ const Dashboard = () => {
 
     const userText = inputText || "File Attached 📎";
     const fileName = selectedFile ? selectedFile.name : null;
-    const msgTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const msgTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',hour12:true });
 
     let activeSessionId = currentSessionId;
     if (!activeSessionId) {
@@ -222,7 +222,7 @@ const Dashboard = () => {
           sessionId: activeSessionId,
           role: "ai",
           text: data.reply,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',hour12:true}),
           createdAt: serverTimestamp()
         });
         
