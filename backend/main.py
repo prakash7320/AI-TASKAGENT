@@ -150,7 +150,7 @@ async def chat_with_ai(request: ChatRequest):
             print("[DEBUG] Normal Text! Using Groq API ")
             groq_response = groq_client.chat.completions.create(
                 messages=[{"role": "user", "content": smart_prompt}],
-                model="llama-3.1-8b-instant", 
+                model="openai/gpt-oss-120b", 
             )
             final_reply = groq_response.choices[0].message.content
 
