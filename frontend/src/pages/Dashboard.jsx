@@ -76,26 +76,30 @@ const Dashboard = () => {
       return;
     }
 
+    // 🚨 orderBy eduthutom! Index thevaipadathu, udane load aagidum
     const q = query(
       collection(db, "chatSessions"),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc")
+      where("userId", "==", user.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const sessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // 🚨 JavaScript-laye latest chat mela varra maathiri sort panrom
+      sessions.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+
       setChatSessions(sessions);
       if (sessions.length > 0) {
-        // Retain current session if it still exists in the user's sessions; otherwise pick the first
         setCurrentSessionId(prev => (sessions.some(s => s.id === prev) ? prev : sessions[0].id));
       } else {
         setCurrentSessionId(null);
       }
+    }, (error) => {
+      console.error("Firestore Error:", error);
     });
 
     return () => unsubscribe();
   }, [user]);
-
   // 🚨 2. Fetch messages for the selected session
   useEffect(() => {
     if (!currentSessionId) {
